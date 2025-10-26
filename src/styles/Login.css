@@ -1,4 +1,4 @@
-/* 🌤 Fondo celeste degradado */
+/*  Fondo celeste degradado */
 .login-container {
   height: 100vh;
   width: 100vw;
@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 
-/* 📦 Tarjeta de login */
+/*  Tarjeta de login */
 .login-card {
   background: #fff;
   border-radius: 15px;
@@ -21,7 +21,7 @@
   animation: fadeUp 0.6s ease;
 }
 
-/* ✨ Animación al cargar */
+/*  Animación al cargar */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -33,7 +33,7 @@
   }
 }
 
-/* 🧠 Logo y títulos */
+/*  Logo y títulos */
 .login-logo {
   width: 120px;
   margin-bottom: 10px;
@@ -60,7 +60,7 @@
   margin: 15px 0 25px;
 }
 
-/* 🏷 Labels alineados a la izquierda */
+/* Labels alineados a la izquierda */
 .login-form label {
   display: block;
   text-align: left;
@@ -70,7 +70,7 @@
   font-size: 14px;
 }
 
-/* 🔹 Inputs con íconos */
+/* Inputs con íconos */
 .input-icon {
   position: relative;
   display: flex;
@@ -99,7 +99,7 @@
   border-color: #007bff;
 }
 
-/* 👁 Mostrar / ocultar contraseña */
+/* Mostrar / ocultar contraseña */
 .toggle-password {
   position: absolute;
   right: 10px;
@@ -113,7 +113,7 @@
   color: #007bff;
 }
 
-/* ☑ Recordarme */
+/* Recordarme */
 .remember-container {
   display: flex;
   align-items: center;
@@ -123,7 +123,7 @@
   margin-bottom: 20px;
 }
 
-/* 🟩 Botón verde */
+/* Botón verde */
 .login-btn {
   width: 100%;
   background: linear-gradient(90deg, #00994c, #00cc66);
@@ -142,7 +142,7 @@
   transform: scale(1.02);
 }
 
-/* ⚠ Error */
+/* Error */
 .login-error {
   color: red;
   font-size: 13px;

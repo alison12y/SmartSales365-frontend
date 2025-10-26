@@ -1,9 +1,8 @@
-/* ===== Layout general ===== */
 .dashboard-dark-wrapper {
   display: flex;
   height: 100vh;
-  width: 100vw; /* asegura ocupar todo el ancho visible */
-  overflow: hidden; /* evita desbordes */
+  width: 100vw; 
+  overflow: hidden;
   font-family: "Poppins", sans-serif;
   background: #1f1f1f;
   color: #f1f1f1;
