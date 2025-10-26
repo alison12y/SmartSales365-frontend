@@ -1,0 +1,308 @@
+/* ===== Layout general ===== */
+.dashboard-dark-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100vw; /* asegura ocupar todo el ancho visible */
+  overflow: hidden; /* evita desbordes */
+  font-family: "Poppins", sans-serif;
+  background: #1f1f1f;
+  color: #f1f1f1;
+}
+
+/* ===== Sidebar ===== */
+.sidebar-dark {
+  width: 260px;
+  min-width: 260px;
+  background: #111827;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 25px 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  text-align: center;
+}
+
+.sidebar-logo {
+  width: 90px;
+  margin-bottom: 10px;
+}
+
+.sidebar-title {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #00c6ff;
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 25px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #cfd8e3;
+  transition: background 0.3s ease, padding-left 0.2s ease;
+}
+
+.menu li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== SUBMENÚ CON ÍCONOS ===== */
+.submenu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #0b1220;
+  border-left: 2px solid rgba(0, 191, 255, 0.15);
+}
+
+.submenu li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 30px;
+  font-size: 13px;
+  color: #b5bdc9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submenu li:hover {
+  color: #00bfff;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(3px);
+}
+
+.submenu li svg {
+  color: #9ca3af;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.submenu li:hover svg {
+  color: #00bfff;
+}
+
+/* ===== Navbar ===== */
+.navbar-dark {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1f2937;
+  padding: 12px 25px;
+  border-bottom: 1px solid #333;
+}
+
+.navbar-dark h1 {
+  color: #00bfff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.logout-btn-dark {
+  background: linear-gradient(90deg, #00b359, #00cc66);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.logout-btn-dark:hover {
+  background: linear-gradient(90deg, #007a3d, #00b359);
+}
+
+/* ===== Main content ===== */
+.main-content-dark {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #1f1f1f;
+  min-height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* ===== Cards ===== */
+.cards-section-dark {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+  padding: 25px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card-dark {
+  background: #2a2f3a;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.card-dark:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.card-dark h3 {
+  color: #00bfff;
+  font-size: 15px;
+}
+
+.card-dark p {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 8px 0;
+}
+
+.card-dark span {
+  font-size: 12px;
+  color: #ccc;
+}
+
+/* ===== Activity Section ===== */
+.activity-dark {
+  padding: 0 25px 25px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.activity-dark h2 {
+  color: #00bfff;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.activity-card-dark {
+  background: #2a2f3a;
+  border-radius: 10px;
+  padding: 15px 20px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.activity-card-dark li {
+  color: #ddd;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* ===== Modal ===== */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px); /* difuminado elegante */
+}
+
+.logout-modal {
+  background: #1f2937;
+  color: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.logout-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-accept {
+  background: #00cc66;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: #444;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .cards-section-dark {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-dark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    z-index: 100;
+  }
+
+  .sidebar-dark.active {
+    transform: translateX(0);
+  }
+
+  .navbar-dark {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cards-section-dark {
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
+
+  .activity-dark {
+    padding: 0 15px 15px;
+  }
+}
+
+/* Pequeñas pantallas */
+@media (max-width: 480px) {
+  .navbar-dark h1 {
+    font-size: 16px;
+  }
+
+  .card-dark p {
+    font-size: 20px;
+  }
+
+  .card-dark h3 {
+    font-size: 14px;
+  }
+}
