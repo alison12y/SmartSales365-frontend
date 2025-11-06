@@ -2,24 +2,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginAdmin } from "../api/auth";
 import "../styles/Login.css";
-import logo from "../../public/logo1..png"; 
+import logo from "../../public/logo1..png";
 
 // Íconos
 import { FaUser, FaLock } from "react-icons/fa";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const result = await loginAdmin(email, password);
+    e.preventDefault(); // evita recarga
+    const result = await loginAdmin(username, password); // usa la variable correcta
     if (result.success) {
-      localStorage.setItem("token", result.token);
       navigate("/dashboard");
     } else {
       setError(result.message);
@@ -41,10 +40,10 @@ function Login() {
           <div className="input-icon">
             <FaUser className="icon" />
             <input
-              type="email"
-              placeholder="admin@smartsales.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              placeholder="Usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>

@@ -39,7 +39,8 @@ function Dashboard() {
   };
 
   const confirmLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
     navigate("/login");
   };
 

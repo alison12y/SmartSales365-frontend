@@ -3,7 +3,7 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 
 function PrivateRoute({ children }) {
-  const hasToken = !!(localStorage.getItem("token"));
+  const hasToken = !!localStorage.getItem("access");
   return hasToken ? children : <Navigate to="/login" replace />;
 }
 
@@ -12,7 +12,14 @@ export default function AppRouter() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
