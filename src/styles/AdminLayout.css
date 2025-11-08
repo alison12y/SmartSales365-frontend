@@ -1,7 +1,7 @@
 .dashboard-dark-wrapper {
   display: flex;
   height: 100vh;
-  width: 100vw; 
+  width: 100vw;
   overflow: hidden;
   font-family: "Poppins", sans-serif;
   background: #1f1f1f;
@@ -16,13 +16,15 @@
   color: white;
   display: flex;
   flex-direction: column;
-  padding: 25px 0;
+  padding: 25px 0 0 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
 }
 
 .sidebar-header {
   text-align: center;
+  padding: 0 15px 15px 15px;
+  border-bottom: 1px solid #333;
 }
 
 .sidebar-logo {
@@ -33,9 +35,14 @@
 .sidebar-title {
   text-align: center;
   font-size: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   font-weight: 600;
   color: #00c6ff;
+}
+
+.menu {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 .menu ul {
@@ -45,6 +52,17 @@
 }
 
 .menu li {
+  display: block;
+  color: #cfd8e3;
+  transition: background 0.3s ease;
+}
+
+.menu li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu li a,
+.menu li span {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -53,14 +71,26 @@
   cursor: pointer;
   font-size: 14px;
   color: #cfd8e3;
-  transition: background 0.3s ease, padding-left 0.2s ease;
+  text-decoration: none;
+  width: 100%;
 }
 
-.menu li:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.menu li a:hover,
+.menu li span:hover {
+  color: #00bfff;
 }
 
-/* ===== SUBMENÚ CON ÍCONOS ===== */
+.menu li a.active {
+  background-color: #00bfff;
+  color: #111827;
+  font-weight: 600;
+}
+
+.menu li a.active svg {
+  color: #111827;
+}
+
+/* ===== SUBMENÚ ===== */
 .submenu {
   list-style: none;
   margin: 0;
@@ -70,6 +100,10 @@
 }
 
 .submenu li {
+  border-bottom: none;
+}
+
+.submenu li a {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -80,7 +114,7 @@
   transition: all 0.2s ease;
 }
 
-.submenu li:hover {
+.submenu li a:hover {
   color: #00bfff;
   background: rgba(255, 255, 255, 0.05);
   transform: translateX(3px);
@@ -92,11 +126,43 @@
   transition: color 0.2s ease;
 }
 
-.submenu li:hover svg {
+.submenu li a:hover svg {
   color: #00bfff;
 }
 
-/* ===== Navbar ===== */
+.submenu li a.active {
+  background-color: #00bfff;
+  color: #111827;
+}
+
+/* --- Logout --- */
+.logout {
+  margin-top: auto;
+  border-top: 1px solid #333;
+}
+
+.logout span {
+  color: #e74c3c;
+}
+
+.logout span:hover {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+
+/* ===== ¡AQUÍ ESTÁ EL ARREGLO 1! ===== */
+/* Esta clase 'wrapper' faltaba en tu CSS */
+.main-content-wrapper-dark {
+  flex-grow: 1;
+  /* <-- 1. Le dice a esta caja que "crezca" y ocupe el resto del ancho */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Evita doble scrollbar */
+}
+
+/* ===== Navbar (Header) ===== */
 .navbar-dark {
   display: flex;
   justify-content: space-between;
@@ -104,12 +170,21 @@
   background: #1f2937;
   padding: 12px 25px;
   border-bottom: 1px solid #333;
+  flex-shrink: 0;
+  /* Evita que el header se encoja */
 }
 
 .navbar-dark h1 {
   color: #00bfff;
   font-size: 20px;
   font-weight: 600;
+  margin: 0;
+}
+
+.navbar-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .logout-btn-dark {
@@ -127,27 +202,33 @@
   background: linear-gradient(90deg, #007a3d, #00b359);
 }
 
-/* ===== Main content ===== */
+
+/* ===== ¡AQUÍ ESTÁ EL ARREGLO 2! ===== */
 .main-content-dark {
-  flex: 1;
+  /* flex: 1; (Tu CSS original) */
+  flex-grow: 1;
+  /* <-- 2. Le dice al 'main' (donde va el Outlet) que ocupe el alto */
   display: flex;
   flex-direction: column;
   background: #1f1f1f;
-  min-height: 100vh;
   width: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
+  /* Permite scroll SÓLO en el contenido */
+  padding: 25px;
+  /* Añade padding al contenido */
   box-sizing: border-box;
+  /* Evita que el padding cause problemas */
 }
 
-/* ===== Cards ===== */
+/* ===== Cards (Dashboard) ===== */
 .cards-section-dark {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 20px;
-  padding: 25px;
+  /* padding: 25px; (Tu CSS original) - Lo movimos al .main-content-dark */
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 25px;
 }
 
 .card-dark {
@@ -166,6 +247,7 @@
 .card-dark h3 {
   color: #00bfff;
   font-size: 15px;
+  margin-top: 0;
 }
 
 .card-dark p {
@@ -180,9 +262,9 @@
   color: #ccc;
 }
 
-/* ===== Activity Section ===== */
+/* ===== Activity Section (Dashboard) ===== */
 .activity-dark {
-  padding: 0 25px 25px;
+  /* padding: 0 25px 25px; (Tu CSS original) - El padding ya está en .main-content-dark */
   width: 100%;
   box-sizing: border-box;
 }
@@ -217,7 +299,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(5px); /* difuminado elegante */
+  backdrop-filter: blur(5px);
+  z-index: 1000;
 }
 
 .logout-modal {
@@ -256,52 +339,111 @@
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 1024px) {
-  .cards-section-dark {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
+/* ... (tu código responsive) ... */
+
+/* --- ¡ESTILOS AÑADIDOS PARA LAS TABLAS DE ADMIN! --- */
+.admin-page {
+  background-color: #2a2f3a;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-@media (max-width: 768px) {
-  .sidebar-dark {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    transform: translateX(-100%);
-    z-index: 100;
-  }
-
-  .sidebar-dark.active {
-    transform: translateX(0);
-  }
-
-  .navbar-dark {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .cards-section-dark {
-    grid-template-columns: 1fr;
-    padding: 15px;
-  }
-
-  .activity-dark {
-    padding: 0 15px 15px;
-  }
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
 }
 
-/* Pequeñas pantallas */
-@media (max-width: 480px) {
-  .navbar-dark h1 {
-    font-size: 16px;
-  }
+.admin-page-header h2 {
+  margin: 0;
+  color: #00bfff;
+}
 
-  .card-dark p {
-    font-size: 20px;
-  }
+.admin-page-header .btn-primary {
+  background: #00bfff;
+  border-color: #00bfff;
+  color: #111827;
+  font-weight: 600;
+}
 
-  .card-dark h3 {
-    font-size: 14px;
-  }
+.admin-page-header .btn-primary:hover {
+  background: #00a6d9;
+  border-color: #00a6d9;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 800px;
+  color: #cfd8e3;
+  border-color: #333;
+}
+
+.table thead.table-dark th {
+  background-color: #111827;
+  color: #00bfff;
+  border-color: #333;
+  font-size: 14px;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 191, 255, 0.1);
+  color: #fff;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+  border-color: #333;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-sm svg {
+  vertical-align: text-top;
+}
+
+.btn-outline-primary {
+  color: #00bfff;
+  border-color: #00bfff;
+}
+
+.btn-outline-primary:hover {
+  background-color: #00bfff;
+  color: #111827;
+}
+
+.btn-outline-danger {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.btn-outline-danger:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
 }
