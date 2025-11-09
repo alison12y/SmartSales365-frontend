@@ -7,6 +7,7 @@ import AdminLayout from "../components/layout/AdminLayout"; // <-- 1. Importar e
 // Importar las páginas de Admin
 import UserListPage from "../pages/admin/UserListPage";
 import RoleListPage from "../pages/admin/RoleListPage";
+import ProductoListPage from "../pages/admin/Produc/ProductoListPage";
 
 // Tu PrivateRoute (¡está perfecta!)
 function PrivateRoute({ children }) {
@@ -37,8 +38,15 @@ export default function AppRouter() {
         <Route index element={<Dashboard />} /> {/* /dashboard */}
         <Route path="users" element={<UserListPage />} /> {/* /dashboard/users */}
         <Route path="roles" element={<RoleListPage />} /> {/* /dashboard/roles */}
-        {/* ...aquí puedes añadir "products", "reports", etc. */}
+        <Route path="products" element={<ProductoListPage />} /> {/* /dashboard/products */}
+        {/* ...aquí puedes añadir "reports", etc. */}
       </Route>
+
+
+
+      {/* Comodín interno: si no existe subruta, vuelve al Dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        
       
       {/* Comodín */}
       <Route path="*" element={<Navigate to="/login" replace />} />

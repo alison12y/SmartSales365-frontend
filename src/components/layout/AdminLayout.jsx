@@ -9,10 +9,7 @@ import {
   FaUserEdit, FaUserCog, FaBook, FaClipboardList, FaBell, FaDatabase, FaChartBar
 } from "react-icons/fa";
 
-
 export default function AdminLayout() {
-  
-
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -36,12 +33,10 @@ export default function AdminLayout() {
     year: "numeric",
   });
 
-
   return (
     <>
       <div className="dashboard-dark-wrapper">
-
-        {/* --- Sidebar --- */}
+        {/* Sidebar */}
         <aside className="sidebar-dark">
           <div className="sidebar-header">
             <img src={logo} alt="SmartSales365" className="sidebar-logo" />
@@ -51,19 +46,20 @@ export default function AdminLayout() {
           <nav className="menu">
             <ul>
               <li>
-                <NavLink to="/dashboard" end> {/* 'end' es importante aquí */}
+                <NavLink to="/dashboard" end>
                   <FaTachometerAlt /> Panel Principal
                 </NavLink>
               </li>
 
               {/* Gestión Comercial */}
               <li onClick={() => handleMenuToggle("comercial")}>
-                <span><FaBox /> Gestión Comercial</span>
-                {openMenu === "comercial" ? <FaChevronUp /> : <FaChevronDown />}
+                <span>
+                  <FaBox /> Gestión Comercial
+                  {openMenu === "comercial" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
               </li>
               {openMenu === "comercial" && (
                 <ul className="submenu">
-
                   <li><NavLink to="/dashboard/products"><FaClipboardList size={12} /> Productos</NavLink></li>
                   <li><NavLink to="/dashboard/customers"><FaUsers size={12} /> Clientes</NavLink></li>
                   <li><NavLink to="/dashboard/sales"><FaChartLine size={12} /> Ventas</NavLink></li>
@@ -72,8 +68,10 @@ export default function AdminLayout() {
 
               {/* Reportes */}
               <li onClick={() => handleMenuToggle("reportes")}>
-                <span><FaFileAlt /> Reportes y Analítica</span>
-                {openMenu === "reportes" ? <FaChevronUp /> : <FaChevronDown />}
+                <span>
+                  <FaFileAlt /> Reportes y Analítica
+                  {openMenu === "reportes" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
               </li>
               {openMenu === "reportes" && (
                 <ul className="submenu">
@@ -84,8 +82,10 @@ export default function AdminLayout() {
               
               {/* IA */}
               <li onClick={() => handleMenuToggle("ia")}>
-                <span><FaRobot /> Inteligencia Artificial</span>
-                {openMenu === "ia" ? <FaChevronUp /> : <FaChevronDown />}
+                <span>
+                  <FaRobot /> Inteligencia Artificial
+                  {openMenu === "ia" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
               </li>
               {openMenu === "ia" && (
                 <ul className="submenu">
@@ -96,8 +96,10 @@ export default function AdminLayout() {
 
               {/* Usuarios */}
               <li onClick={() => handleMenuToggle("usuarios")}>
-                <span><FaUsers /> Usuarios y Roles</span>
-                {openMenu === "usuarios" ? <FaChevronUp /> : <FaChevronDown />}
+                <span>
+                  <FaUsers /> Usuarios y Roles
+                  {openMenu === "usuarios" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
               </li>
               {openMenu === "usuarios" && (
                 <ul className="submenu">
@@ -109,25 +111,29 @@ export default function AdminLayout() {
 
               {/* Seguridad */}
               <li onClick={() => handleMenuToggle("seguridad")}>
-                  <span><FaLock /> Seguridad</span>
+                <span>
+                  <FaLock /> Seguridad
                   {openMenu === "seguridad" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
               </li>
               {openMenu === "seguridad" && (
-                  <ul className="submenu">
-                      <li><NavLink to="/dashboard/security/audit"><FaBook size={12} /> Bitácora</NavLink></li>
-                  </ul>
+                <ul className="submenu">
+                  <li><NavLink to="/dashboard/security/audit"><FaBook size={12} /> Bitácora</NavLink></li>
+                </ul>
               )}
 
               {/* Comunicación */}
               <li onClick={() => handleMenuToggle("comunicacion")}>
-                  <span><FaEnvelope /> Comunicación</span>
+                <span>
+                  <FaEnvelope /> Comunicación
                   {openMenu === "comunicacion" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
               </li>
               {openMenu === "comunicacion" && (
-                  <ul className="submenu">
-                      <li><NavLink to="/dashboard/communication/notices"><FaBell size={12} /> Avisos</NavLink></li>
-                      <li><NavLink to="/dashboard/communication/reminders"><FaEnvelope size={12} /> Recordatorios</NavLink></li>
-                  </ul>
+                <ul className="submenu">
+                  <li><NavLink to="/dashboard/communication/notices"><FaBell size={12} /> Avisos</NavLink></li>
+                  <li><NavLink to="/dashboard/communication/reminders"><FaEnvelope size={12} /> Recordatorios</NavLink></li>
+                </ul>
               )}
 
               {/* Logout */}
@@ -139,7 +145,7 @@ export default function AdminLayout() {
         </aside>
 
         <div className="main-content-wrapper-dark">
-          {/* Header  */}
+          {/* Header */}
           <header className="navbar-dark">
             <h1>Panel de Administración</h1>
             <div className="navbar-info">
@@ -150,14 +156,14 @@ export default function AdminLayout() {
             </div>
           </header>
 
-          {/* --- 7. ¡EL "HUECO" PARA EL CONTENIDO! ---
-          */}
+          {/* Contenido */}
           <main className="main-content-dark">
             <Outlet />
           </main>
         </div>
       </div>
 
+      {/* Modal de Logout */}
       {showLogoutModal && (
         <div className="logout-modal-overlay">
           <div className="logout-modal">
