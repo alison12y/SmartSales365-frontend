@@ -1,36 +1,54 @@
+// src/api/catalogo.js
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/catalog/productos/";
+const BASE_URL = "http://localhost:8000/api/catalog/";
 
-//  Esta función lee el token guardado en el localStorage
+// === AUTENTICACIÓN ===
 const getAuthHeaders = () => {
   const token = localStorage.getItem("access") || localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// === PETICIONES CON AUTENTICACIÓN ===
-
-// Listar productos
+// === PRODUCTOS ===
 export const getProductos = (params = {}) =>
-  axios.get(API_URL, {
+  axios.get(`${BASE_URL}productos/`, {
     params,
     headers: getAuthHeaders(),
   });
 
-// Crear producto
 export const createProducto = (data) =>
-  axios.post(API_URL, data, {
+  axios.post(`${BASE_URL}productos/`, data, {
     headers: getAuthHeaders(),
   });
 
-// Actualizar producto
 export const updateProducto = (id, data) =>
-  axios.put(`${API_URL}${id}/`, data, {
+  axios.put(`${BASE_URL}productos/${id}/`, data, {
     headers: getAuthHeaders(),
   });
 
-// Eliminar producto
 export const deleteProducto = (id) =>
-  axios.delete(`${API_URL}${id}/`, {
+  axios.delete(`${BASE_URL}productos/${id}/`, {
+    headers: getAuthHeaders(),
+  });
+
+// === GARANTÍAS ===
+export const getGarantias = (params = {}) =>
+  axios.get(`${BASE_URL}garantias/`, {
+    params,
+    headers: getAuthHeaders(),
+  });
+
+export const createGarantia = (data) =>
+  axios.post(`${BASE_URL}garantias/`, data, {
+    headers: getAuthHeaders(),
+  });
+
+export const updateGarantia = (id, data) =>
+  axios.put(`${BASE_URL}garantias/${id}/`, data, {
+    headers: getAuthHeaders(),
+  });
+
+export const deleteGarantia = (id) =>
+  axios.delete(`${BASE_URL}garantias/${id}/`, {
     headers: getAuthHeaders(),
   });

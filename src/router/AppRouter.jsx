@@ -8,6 +8,8 @@ import AdminLayout from "../components/layout/AdminLayout"; // <-- 1. Importar e
 import UserListPage from "../pages/admin/UserListPage";
 import RoleListPage from "../pages/admin/RoleListPage";
 import ProductoListPage from "../pages/admin/Produc/ProductoListPage";
+import ClienteListPage from "../pages/admin/ClienteListPage";
+
 
 // Tu PrivateRoute (¡está perfecta!)
 function PrivateRoute({ children }) {
@@ -39,6 +41,8 @@ export default function AppRouter() {
         <Route path="users" element={<UserListPage />} /> {/* /dashboard/users */}
         <Route path="roles" element={<RoleListPage />} /> {/* /dashboard/roles */}
         <Route path="products" element={<ProductoListPage />} /> {/* /dashboard/products */}
+        <Route path="customers" element={<ClienteListPage />} /> {/* /dashboard/customers */}
+        
         {/* ...aquí puedes añadir "reports", etc. */}
       </Route>
 

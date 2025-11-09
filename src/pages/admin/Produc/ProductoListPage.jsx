@@ -4,6 +4,7 @@ import {
   createProducto,
   updateProducto,
   deleteProducto,
+  createGarantia,
 } from "../../../api/productos";
 import "../../../styles/ProductoListPage.css";
 import {
@@ -27,6 +28,11 @@ function ProductoListPage() {
   const [mostrarDetalles, setMostrarDetalles] = useState(null);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
+  const [mostrarGarantiaModal, setMostrarGarantiaModal] = useState(false);
+  const [tipo_garantia, setTipo_garantia] = useState("");
+  const [duracion_meses, setDuracion_meses] = useState("");
+  const [proveedor_servicio, setProveedor_servicio] = useState("");
+  const [descripcion_condiciones, setDescripcion_condiciones] = useState("");
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -139,6 +145,92 @@ function ProductoListPage() {
   const cambiarPagina = (num) => setPaginaActual(num);
 
   // === EXPORTACIONES ===
+
+   const exportarDetallePDF = (producto) => {
+  if (!producto) return;
+
+  // 📄 Documento
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "A4" });
+
+  // === ENCABEZADO ===
+  doc.setFontSize(16);
+  doc.text("Detalle de Producto", 40, 40);
+  doc.setFontSize(12);
+  doc.text(`SmartSales365 — ${new Date().toLocaleDateString()}`, 40, 60);
+
+  // === DATOS DEL PRODUCTO ===
+  const datosProducto = [
+    ["Nombre", producto.nombre || "-"],
+    ["Marca", producto.marca || "-"],
+    ["Modelo", producto.modelo || "-"],
+    ["Precio", `Bs. ${producto.precio || 0}`],
+    ["Stock", producto.stock || "0"],
+    ["Estado", producto.estado || "-"],
+    ["Descripción", producto.descripcion || "-"],
+  ];
+
+  autoTable(doc, {
+    startY: 80,
+    head: [["Campo", "Valor"]],
+    body: datosProducto,
+    theme: "striped",
+    headStyles: {
+      fillColor: [37, 99, 235],
+      textColor: 255,
+      fontStyle: "bold",
+    },
+    styles: {
+      cellPadding: 6,
+      fontSize: 11,
+    },
+  });
+
+  // === GARANTÍAS ASOCIADAS ===
+  const garantias = producto.garantias || [];
+
+  if (garantias.length > 0) {
+    doc.setFontSize(14);
+    doc.text("Garantías Asociadas", 40, doc.lastAutoTable.finalY + 30);
+
+    const datosGarantias = garantias.map((g) => [
+      g.tipo_garantia || "-",
+      `${g.duracion_meses || 0} meses`,
+      g.proveedor_servicio || "-",
+      g.descripcion_condiciones || "-",
+      g.estado || "-",
+    ]);
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 50,
+      head: [["Tipo", "Duración", "Proveedor", "Condiciones", "Estado"]],
+      body: datosGarantias,
+      theme: "grid",
+      headStyles: {
+        fillColor: [16, 185, 129],
+        textColor: 255,
+      },
+      styles: {
+        cellPadding: 5,
+        fontSize: 10,
+        valign: "top",
+      },
+      bodyStyles: {
+        lineColor: [220, 220, 220],
+      },
+    });
+  } else {
+    // Si no hay garantías, mostrar mensaje
+    doc.setFontSize(12);
+    doc.text("No hay garantías registradas para este producto.", 40, doc.lastAutoTable.finalY + 40);
+  }
+
+  // === ABRIR PARA IMPRIMIR ===
+  const pdfBlob = doc.output("blob");
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+  const printWindow = window.open(pdfUrl);
+  printWindow.onload = () => printWindow.print();
+};
+
   const exportarPDF = () => {
     try {
       if (!productos || productos.length === 0) {
@@ -504,44 +596,64 @@ function ProductoListPage() {
 
       {/* === MODAL DETALLES === */}
       {mostrarDetalles && (
-        <div className="modal">
-          <div className="modal-content detalles">
-            <h3>Detalles del Producto</h3>
-            <p>
-              <b>ID:</b> {mostrarDetalles.id}
-            </p>
-            <p>
-              <b>Nombre:</b> {mostrarDetalles.nombre}
-            </p>
-            <p>
-              <b>Marca:</b> {mostrarDetalles.marca}
-            </p>
-            <p>
-              <b>Modelo:</b> {mostrarDetalles.modelo}
-            </p>
-            <p>
-              <b>Precio:</b> Bs. {mostrarDetalles.precio}
-            </p>
-            <p>
-              <b>Stock:</b> {mostrarDetalles.stock}
-            </p>
-            <p>
-              <b>Estado:</b> {mostrarDetalles.estado}
-            </p>
-            <p>
-              <b>Descripción:</b> {mostrarDetalles.descripcion}
-            </p>
-            <div className="modal-actions">
-              <button
-                className="btn-cancelar"
-                onClick={() => setMostrarDetalles(null)}
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="modal">
+    <div className="modal-content detalles">
+      <h3>Detalles del Producto</h3>
+      <p><b>Nombre:</b> {mostrarDetalles.nombre}</p>
+      <p><b>Marca:</b> {mostrarDetalles.marca}</p>
+      <p><b>Modelo:</b> {mostrarDetalles.modelo}</p>
+      <p><b>Precio:</b> Bs. {mostrarDetalles.precio}</p>
+      <p><b>Stock:</b> {mostrarDetalles.stock}</p>
+      <p><b>Estado:</b> {mostrarDetalles.estado}</p>
+      <p><b>Descripción:</b> {mostrarDetalles.descripcion}</p>
+
+      <hr />
+
+      <h4>Garantías Asociadas</h4>
+
+{mostrarDetalles.garantias && mostrarDetalles.garantias.length > 0 ? (
+  <ul>
+    {mostrarDetalles.garantias.map((g) => (
+    <li key={g.id}>
+    <b>{g.tipo_garantia}</b> — {g.duracion_meses} meses  
+    <br />
+    <small>Proveedor: {g.proveedor_servicio}</small>
+    <br />
+    <small>Estado: {g.estado}</small>
+    <br />
+    <small><b>Condiciones:</b> {g.descripcion_condiciones || "—"}</small>
+  </li>
+))}
+  </ul>
+) : (
+  <p>No hay garantías registradas para este producto.</p>
+)}
+
+<button
+  className="btn-success"
+  style={{ marginTop: "10px" }}
+  onClick={() => setMostrarGarantiaModal(true)}
+>
+  <FaPlus /> Agregar Garantía
+</button>
+
+      <div className="modal-actions">
+        <button className="btn-cancelar" onClick={() => setMostrarDetalles(null)}>
+          Cerrar
+        </button>
+      </div>
+       <button
+    className="btn-primary"
+    onClick={() => exportarDetallePDF(mostrarDetalles)}
+  >
+    <FaFilePdf /> Imprimir Detalle
+  </button>
+  <button className="btn-cancelar" onClick={() => setMostrarDetalles(null)}>
+    Cerrar
+  </button>
+    </div>
+  </div>
+)}
 
       {/* === MODAL DE CONFIRMACIÓN DE ELIMINACIÓN === */}
       {mostrarConfirmacion && (
@@ -566,6 +678,81 @@ function ProductoListPage() {
           </div>
         </div>
       )}
+
+      {/* === MODAL DE GARANTÍA === */}
+{mostrarGarantiaModal && (
+  <div className="modal">
+    <div className="modal-content">
+      <h3>Nueva Garantía</h3>
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          try {
+            await createGarantia({
+              producto: mostrarDetalles.id,
+              tipo_garantia,
+              duracion_meses,
+              proveedor_servicio,
+              descripcion_condiciones,
+              estado: "activa",
+           });
+
+          //  Recargar producto con garantías actualizadas
+            const res = await axios.get(`http://localhost:8000/api/catalog/productos/${mostrarDetalles.id}/`);
+          setMostrarDetalles(res.data); 
+          setMostrarGarantiaModal(false);
+
+            // Limpiar campos
+            setTipo_garantia("");
+            setDuracion_meses("");
+            setProveedor_servicio("");
+            setDescripcion_condiciones("");
+          } catch (error) {
+            console.error("Error al guardar garantía:", error);
+            alert("Error al guardar garantía. Revisa la consola.");
+          }
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Tipo de garantía (fábrica / extendida)"
+          value={tipo_garantia}
+          onChange={(e) => setTipo_garantia(e.target.value)}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Duración (meses)"
+          value={duracion_meses}
+          onChange={(e) => setDuracion_meses(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Proveedor del servicio"
+          value={proveedor_servicio}
+          onChange={(e) => setProveedor_servicio(e.target.value)}
+        />
+        <textarea
+          placeholder="Condiciones"
+          value={descripcion_condiciones}
+          onChange={(e) => setDescripcion_condiciones(e.target.value)}
+        />
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="btn-cancelar"
+            onClick={() => setMostrarGarantiaModal(false)}
+          >
+            Cancelar
+          </button>
+          <button type="submit" className="btn-primary">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }
