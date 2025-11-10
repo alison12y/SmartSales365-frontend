@@ -1,6 +1,8 @@
+// src/api/clientes.js
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/customers/";
+//  Usa la variable de entorno configurada en Vercel o local (.env)
+const API_URL = `${import.meta.env.VITE_API_URL}/customers/`;
 
 // === LEE EL TOKEN JWT DEL LOCALSTORAGE ===
 const getAuthHeaders = () => {

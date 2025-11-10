@@ -1,7 +1,8 @@
 // src/api/catalogo.js
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000/api/catalog/";
+//  usa la variable de entorno configurada en Vercel
+const BASE_URL = `${import.meta.env.VITE_API_URL}/catalog/`;
 
 // === AUTENTICACIÓN ===
 const getAuthHeaders = () => {

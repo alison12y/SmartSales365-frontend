@@ -6,13 +6,15 @@ import "../../styles/AdminLayout.css";
 import {
   FaTachometerAlt, FaBox, FaUsers, FaChartLine, FaRobot, FaFileAlt,
   FaCogs, FaLock, FaEnvelope, FaChevronDown, FaChevronUp, FaPowerOff,
-  FaUserEdit, FaUserCog, FaBook, FaClipboardList, FaBell, FaDatabase, FaChartBar
+  FaUserEdit, FaUserCog, FaBook, FaClipboardList, FaBell, FaDatabase, FaChartBar,
+  FaBars
 } from "react-icons/fa";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // 👈 nuevo estado
 
   const handleMenuToggle = (menu) => {
     setOpenMenu(openMenu === menu ? null : menu);
@@ -37,7 +39,7 @@ export default function AdminLayout() {
     <>
       <div className="dashboard-dark-wrapper">
         {/* Sidebar */}
-        <aside className="sidebar-dark">
+        <aside className={`sidebar-dark ${sidebarOpen ? "open" : ""}`}> 
           <div className="sidebar-header">
             <img src={logo} alt="SmartSales365" className="sidebar-logo" />
             <h3 className="sidebar-title">SmartSales365</h3>
@@ -79,7 +81,7 @@ export default function AdminLayout() {
                   <li><NavLink to="/dashboard/reports/dynamic"><FaDatabase size={12} /> Reportes Dinámicos</NavLink></li>
                 </ul>
               )}
-              
+
               {/* IA */}
               <li onClick={() => handleMenuToggle("ia")}>
                 <span>
@@ -147,6 +149,11 @@ export default function AdminLayout() {
         <div className="main-content-wrapper-dark">
           {/* Header */}
           <header className="navbar-dark">
+            {/* Botón hamburguesa móvil */}
+            <button className="menu-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <FaBars />
+            </button>
+
             <h1>Panel de Administración</h1>
             <div className="navbar-info">
               <span>{date}</span>
