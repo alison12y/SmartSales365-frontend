@@ -1,14 +1,10 @@
-// 1. ¡CAMBIO IMPORTANTE!
-// Ya no importamos 'axios'. Importamos 'adminApi' que ya tiene el token.
 import { adminApi } from './adminService';
 
 /**
  * Obtiene la lista de productos (paginada y filtrada).
- * Esta función ahora usará el token del usuario logueado.
  * @param {object} params - Opciones como { page: 1, search: 'sony', categoria: 2 }
  */
 export const getPublicProducts = (params) => {
-  // 2. Usamos 'adminApi' en lugar de 'publicCatalogApi'
   return adminApi.get("/catalog/productos/", { params });
 };
 
@@ -17,7 +13,6 @@ export const getPublicProducts = (params) => {
  * @param {number} id - ID del producto
  */
 export const getPublicProductDetail = (id) => {
-  // 3. Usamos 'adminApi'
   return adminApi.get(`/catalog/productos/${id}/`);
 };
 
@@ -25,6 +20,20 @@ export const getPublicProductDetail = (id) => {
  * Obtiene la lista de todas las categorías.
  */
 export const getPublicCategories = () => {
-  // 4. Usamos 'adminApi'
   return adminApi.get("/catalog/categorias/");
+};
+
+/**
+ * Obtiene productos recomendados basados en un producto dado (Machine Learning).
+ * @param {number} productId - ID del producto de referencia
+ */
+export const getRecommendedProducts = (productId) => {
+  return adminApi.get(`/catalog/productos/${productId}/recomendados/`);
+};
+
+/**
+ * Obtiene productos recomendados globales para el usuario (Machine Learning).
+ */
+export const getRecommendedProductsForUser = () => {
+  return adminApi.get("/catalog/productos/recomendados-usuario/");
 };

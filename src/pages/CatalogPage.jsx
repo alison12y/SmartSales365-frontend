@@ -4,18 +4,20 @@ import { getPublicProducts, getPublicCategories } from "../api/catalogService";
 import { useDebounce } from "../hooks/useDebounce";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/products/ProductCard";
+import { useCart } from "../context/CartContext";
 import { Grid3x3, List } from "lucide-react";
 import "../styles/CatalogPage.css";
-import { useCart } from "../context/CartContext";
 
 const ITEMS_POR_PAGINA = 12;
 
 function CatalogPage() {
+  // === ESTADOS ===
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Filtros
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [busqueda, setBusqueda] = useState("");
@@ -24,14 +26,14 @@ function CatalogPage() {
   const [viewType, setViewType] = useState("grid");
   const debouncedBusqueda = useDebounce(busqueda, 300);
 
-  const { addToCart } = useCart(); // <-- carrito
-
-  // === Cargar categorías
+  // === CARGAR CATEGORÍAS ===
   useEffect(() => {
     const loadCategories = async () => {
       try {
         const res = await getPublicCategories();
-        const cats = Array.isArray(res.data) ? res.data : res.data.results || [];
+        const cats = Array.isArray(res.data)
+          ? res.data
+          : res.data.results || [];
         setCategories(cats);
       } catch (err) {
         console.warn("No se pudieron cargar categorías:", err);
@@ -41,7 +43,7 @@ function CatalogPage() {
     loadCategories();
   }, []);
 
-  // === Cargar productos
+  // === CARGAR PRODUCTOS ===
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -66,20 +68,27 @@ function CatalogPage() {
     }
   };
 
+  // Cargar productos en cambios de filtro
   useEffect(() => {
     setPaginaActual(1);
     loadProducts();
   }, [debouncedBusqueda, categoriaSeleccionada, ordenamiento]);
 
+  // Cargar productos al cambiar de página
   useEffect(() => {
     loadProducts();
   }, [paginaActual]);
 
+  // === PAGINACIÓN ===
   const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
+
+  // === AGREGAR AL CARRITO ===
+  const { addToCart } = useCart();
 
   const handleAddToCart = (productId, quantity = 1) => {
     const product = products.find((p) => p.id === productId);
-    if (product) addToCart(product, quantity);
+    if (!product) return console.warn('Producto no encontrado para agregar al carrito', productId);
+    addToCart(product, quantity);
   };
 
   return (
@@ -96,25 +105,25 @@ function CatalogPage() {
         <div className="catalog-title-section">
           <h1>🛍️ Nuestro Catálogo</h1>
           <p className="catalog-subtitle">
-            {totalItems > 0 ? `${totalItems} productos disponibles` : "Sin productos"}
+            {totalItems > 0
+              ? `${totalItems} productos disponibles`
+              : "Sin productos"}
           </p>
         </div>
-
-        <div className="catalog-actions">
-          <Link to="/dashboard/cart" className="btn btn-primary">
-            🛒 Ver Carrito
-          </Link>
-          <input
-            type="text"
-            placeholder="Buscar productos..."
-            className="catalog-search"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
+        <div className="catalog-header-actions">
+          <Link to="/dashboard/cart" className="btn btn-secondary">Ir al carrito</Link>
         </div>
+        <input
+          type="text"
+          placeholder="Buscar productos..."
+          className="catalog-search"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
       </div>
 
       <div className="catalog-container">
+        {/* Sidebar de filtros */}
         <aside className="catalog-sidebar">
           <div className="filter-group">
             <h3 className="filter-title">Categorías</h3>
@@ -160,18 +169,22 @@ function CatalogPage() {
           </div>
         </aside>
 
+        {/* Main Content */}
         <div className="catalog-main">
+          {/* View Controls */}
           <div className="catalog-controls">
             <div className="view-toggle">
               <button
                 className={`view-btn ${viewType === "grid" ? "active" : ""}`}
                 onClick={() => setViewType("grid")}
+                title="Vista en cuadrícula"
               >
                 <Grid3x3 size={20} />
               </button>
               <button
                 className={`view-btn ${viewType === "list" ? "active" : ""}`}
                 onClick={() => setViewType("list")}
+                title="Vista en lista"
               >
                 <List size={20} />
               </button>
@@ -187,12 +200,16 @@ function CatalogPage() {
             </div>
           ) : products.length > 0 ? (
             <>
-              <div className={`product-grid ${viewType === "list" ? "product-list" : ""}`}>
+              <div
+                className={`product-grid ${
+                  viewType === "list" ? "product-list" : ""
+                }`}
+              >
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
-                    onAddToCart={() => handleAddToCart(product.id)}
+                    onAddToCart={handleAddToCart}
                     viewType={viewType}
                   />
                 ))}
@@ -202,22 +219,38 @@ function CatalogPage() {
                 <div className="pagination-container">
                   <button
                     disabled={paginaActual === 1}
-                    onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
+                    onClick={() =>
+                      setPaginaActual((prev) => Math.max(1, prev - 1))
+                    }
+                    className="pagination-btn"
                   >
                     ← Anterior
                   </button>
-                  {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
-                    <button
-                      key={num}
-                      className={paginaActual === num ? "active" : ""}
-                      onClick={() => setPaginaActual(num)}
-                    >
-                      {num}
-                    </button>
-                  ))}
+
+                  <div className="pagination-numbers">
+                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(
+                      (num) => (
+                        <button
+                          key={num}
+                          className={`pagination-num ${
+                            paginaActual === num ? "active" : ""
+                          }`}
+                          onClick={() => setPaginaActual(num)}
+                        >
+                          {num}
+                        </button>
+                      )
+                    )}
+                  </div>
+
                   <button
                     disabled={paginaActual === totalPaginas}
-                    onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
+                    onClick={() =>
+                      setPaginaActual((prev) =>
+                        Math.min(totalPaginas, prev + 1)
+                      )
+                    }
+                    className="pagination-btn"
                   >
                     Siguiente →
                   </button>

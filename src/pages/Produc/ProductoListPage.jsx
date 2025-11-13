@@ -89,9 +89,9 @@ function ProductoListPage() {
       });
 
       if (editing) {
-        await updateProducto(editingId, formDataToSend, true);
+        await updateProducto(editingId, formDataToSend);
       } else {
-        await createProducto(formDataToSend, true);
+        await createProducto(formDataToSend);
       }
 
       setMostrarModal(false);
@@ -155,6 +155,50 @@ function ProductoListPage() {
     } catch (err) {
       console.error("Error al eliminar:", err);
     }
+  };
+
+  // === GARANTÍAS ===
+  const handleAgregarGarantia = async () => {
+    if (!mostrarDetalles?.id) {
+      alert("Selecciona un producto primero");
+      return;
+    }
+
+    if (!tipo_garantia.trim() || !duracion_meses || !proveedor_servicio.trim()) {
+      alert("Por favor completa todos los campos");
+      return;
+    }
+
+    try {
+      const data = {
+        producto_id: mostrarDetalles.id,
+        tipo_garantia,
+        duracion_meses: parseInt(duracion_meses),
+        proveedor_servicio,
+        descripcion_condiciones,
+        estado: "activo",
+      };
+
+      await createGarantia(data);
+      alert("Garantía agregada exitosamente");
+
+      // Limpiar formulario
+      resetGarantiaForm();
+      setMostrarGarantiaModal(false);
+
+      // Recargar detalles del producto
+      loadProductos();
+    } catch (error) {
+      console.error("Error al agregar garantía:", error);
+      alert("Error al agregar garantía: " + error.message);
+    }
+  };
+
+  const resetGarantiaForm = () => {
+    setTipo_garantia("");
+    setDuracion_meses("");
+    setProveedor_servicio("");
+    setDescripcion_condiciones("");
   };
 
   // === FILTROS ===
@@ -396,12 +440,92 @@ function ProductoListPage() {
             <p><b>Estado:</b> {mostrarDetalles.estado}</p>
             <p><b>Descripción:</b> {mostrarDetalles.descripcion}</p>
 
+            {/* Garantías */}
+            {mostrarDetalles.garantias && mostrarDetalles.garantias.length > 0 && (
+              <div style={{ marginTop: "15px" }}>
+                <h4>Garantías Asociadas:</h4>
+                <ul style={{ marginLeft: "20px" }}>
+                  {mostrarDetalles.garantias.map((g) => (
+                    <li key={g.id}>
+                      <b>{g.tipo_garantia}</b> - {g.duracion_meses} meses
+                      <br />
+                      <small>{g.proveedor_servicio}</small>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <button className="btn-primary" onClick={() => setMostrarGarantiaModal(true)}>
+              + Agregar Garantía
+            </button>
             <button className="btn-primary" onClick={() => exportarDetallePDF(mostrarDetalles)}>
               <FaFilePdf /> Imprimir Detalle
             </button>
             <button className="btn-cancelar" onClick={() => setMostrarDetalles(null)}>
               Cerrar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* === MODAL GARANTÍA === */}
+      {mostrarGarantiaModal && mostrarDetalles && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Agregar Garantía a {mostrarDetalles.nombre}</h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleAgregarGarantia();
+            }}>
+              <input
+                type="text"
+                placeholder="Tipo de Garantía (Ej: Garantía del Fabricante)"
+                value={tipo_garantia}
+                onChange={(e) => setTipo_garantia(e.target.value)}
+                required
+              />
+
+              <input
+                type="number"
+                placeholder="Duración (meses)"
+                value={duracion_meses}
+                onChange={(e) => setDuracion_meses(e.target.value)}
+                min="1"
+                required
+              />
+
+              <input
+                type="text"
+                placeholder="Proveedor del Servicio"
+                value={proveedor_servicio}
+                onChange={(e) => setProveedor_servicio(e.target.value)}
+                required
+              />
+
+              <textarea
+                placeholder="Descripción y Condiciones"
+                value={descripcion_condiciones}
+                onChange={(e) => setDescripcion_condiciones(e.target.value)}
+                rows="4"
+              />
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-cancelar"
+                  onClick={() => {
+                    setMostrarGarantiaModal(false);
+                    resetGarantiaForm();
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-primary">
+                  Agregar Garantía
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

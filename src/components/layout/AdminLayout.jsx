@@ -9,6 +9,7 @@ import {
   FaUserEdit, FaUserCog, FaBook, FaClipboardList, FaBell, FaDatabase, FaChartBar,
   FaBars, FaStore
 } from "react-icons/fa";
+import NotificationBell from '../../components/notifications/NotificationBell';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -89,13 +90,19 @@ export default function AdminLayout() {
               {openMenu === "comercial" && (
                 <ul className="submenu">
                   <li><NavLink to="/dashboard/products"><FaClipboardList size={12} /> Productos</NavLink></li>
+                  <li><NavLink to="/dashboard/promotions"><FaChartLine size={12} /> Promociones</NavLink></li>
                   <li>
                     <a href="/dashboard/shop" target="_blank" rel="noopener noreferrer">
                       <FaStore size={12} /> Ver Tienda (Catálogo)
                     </a>
                   </li>
                   <li><NavLink to="/dashboard/customers"><FaUsers size={12} /> Clientes</NavLink></li>
-                  <li><NavLink to="/dashboard/sales"><FaChartLine size={12} /> Ventas</NavLink></li>
+                  <li>
+                    <NavLink to="/dashboard/shop/recommended">
+                      <FaRobot size={12} /> Productos Recomendados
+                    </NavLink>
+                  </li>
+
                 </ul>
               )}
 
@@ -164,6 +171,8 @@ export default function AdminLayout() {
             <h1>Panel de Administración</h1>
             <div className="navbar-info">
               <span>{date}</span>
+              {/* Notification bell */}
+              <NotificationBell />
               <button onClick={handleLogout} className="logout-btn-dark">
                 <FaPowerOff /> Cerrar Sesión
               </button>
