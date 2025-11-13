@@ -1,123 +1,150 @@
 import React, { useState, useEffect } from "react";
+// 1. Importamos las funciones del nuevo archivo API
 import {
   getClientes,
-  createCliente,
+  getAllClientes, // Para los reportes
   updateCliente,
   deleteCliente,
-} from "../../api/clientes";
-import "../../styles/ClienteListPage.css";
+} from "../../api/clientes"; // <-- USANDO EL NUEVO ARCHIVO
+// 2. Importamos el hook de debounce
+import { useDebounce } from "../../hooks/useDebounce";
+
+import "../../styles/AdminLayout.css"; // Usamos el CSS unificado
+import 'bootstrap/dist/css/bootstrap.min.css';
 import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaEye,
-  FaFilePdf,
-  FaFileExcel,
-  FaPrint,
+  FaEdit, FaTrash, FaEye,
+  FaFilePdf, FaFileExcel, FaPrint
 } from "react-icons/fa";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+const CLIENTES_POR_PAGINA = 10; // Puedes ajustar esto
+
 function ClienteListPage() {
-  const [clientes, setClientes] = useState([]);
+  // --- Estados de Datos ---
+  const [clientes, setClientes] = useState([]); // Almacena solo los clientes de la PÁGINA ACTUAL
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // --- Estados de Paginación y Búsqueda (SERVER-SIDE) ---
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalClientes, setTotalClientes] = useState(0); // Total de clientes en la BD
   const [busqueda, setBusqueda] = useState("");
+  const debouncedBusqueda = useDebounce(busqueda, 300); // Búsqueda "retrasada"
+
+  // --- Estados de UI (Modales) ---
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarDetalles, setMostrarDetalles] = useState(null);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
-  const [clienteAEliminar, setClienteAEliminar] = useState(null);
-
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [formData, setFormData] = useState({
     user: "",
+    username: "",
+    email: "",
+    nombre_completo: "",
     ci_nit: "",
     telefono: "",
     direccion: "",
     ciudad: "",
   });
 
-  const [editing, setEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [paginaActual, setPaginaActual] = useState(1);
-  const clientesPorPagina = 5;
-
-  // === Cargar clientes ===
+  // === 1. Cargar Clientes (PAGINADO y con BÚSQUEDA) ===
   const loadClientes = async () => {
     try {
-      const res = await getClientes();
-      setClientes(res.data.results || res.data);
+      setLoading(true);
+      // Pide al backend solo la página y la búsqueda que necesitamos
+      const params = {
+        page: paginaActual,
+        page_size: CLIENTES_POR_PAGINA,
+        search: debouncedBusqueda || "", // Envía la búsqueda al backend
+      };
+
+      const res = await getClientes(params);
+
+      setClientes(res.data.results); // Guardamos solo los resultados de esta página
+      setTotalClientes(res.data.count); // Guardamos el conteo total
+      setError(null);
     } catch (err) {
       console.error("Error al cargar clientes:", err);
+      setError("Error al cargar clientes. ¿Estás logueado como Admin?");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // === 2. useEffect para recargar datos ===
+  // Se ejecuta al montar, o cuando la página actual o la búsqueda cambian
   useEffect(() => {
     loadClientes();
-  }, []);
+  }, [paginaActual, debouncedBusqueda]); // Dependencias
 
-  // === HANDLERS ===
+  // === 3. HANDLERS (CRUD) ===
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Esta función AHORA SOLO EDITA. No crea.
   const handleGuardar = async (e) => {
     e.preventDefault();
+    if (!clienteSeleccionado) return;
+
     try {
-      if (editing) {
-        await updateCliente(editingId, formData);
-      } else {
-        await createCliente(formData);
-      }
+      // Preparamos solo los datos que el serializer de Cliente espera
+      const dataParaActualizar = {
+        user: formData.user, // El ID del usuario (lo necesita el serializer)
+        ci_nit: formData.ci_nit,
+        telefono: formData.telefono,
+        direccion: formData.direccion,
+        ciudad: formData.ciudad,
+      };
+
+      await updateCliente(clienteSeleccionado.id, dataParaActualizar);
       setMostrarModal(false);
-      setEditing(false);
-      resetForm();
-      loadClientes();
+      setClienteSeleccionado(null);
+      loadClientes(); // Recargamos la data
+      setError(null);
     } catch (error) {
-      console.error("Error al guardar cliente:", error);
+      console.error("Error al guardar cliente:", error.response?.data);
+      setError("Error al guardar. Revisa los campos.");
     }
   };
 
-  const resetForm = () => {
+  const handleEditar = (cliente) => {
+    setClienteSeleccionado(cliente);
+    // Llenamos el formulario con los datos del cliente
     setFormData({
-      user: "",
-      ci_nit: "",
-      telefono: "",
-      direccion: "",
-      ciudad: "",
+      user: cliente.user,
+      username: cliente.username,
+      email: cliente.email,
+      nombre_completo: cliente.nombre_completo,
+      ci_nit: cliente.ci_nit || "",
+      telefono: cliente.telefono || "",
+      direccion: cliente.direccion || "",
+      ciudad: cliente.ciudad || "",
     });
-  };
-
-  const handleNuevo = () => {
-    setEditing(false);
-    resetForm();
-    setMostrarModal(true);
-  };
-
-  const handleEditar = (c) => {
-    setEditing(true);
-    setEditingId(c.id);
-    setFormData(c);
     setMostrarModal(true);
   };
 
   const handleEliminar = (cliente) => {
-    setClienteAEliminar(cliente);
+    setClienteSeleccionado(cliente);
     setMostrarConfirmacion(true);
   };
 
   const confirmarEliminar = async () => {
-    if (!clienteAEliminar) return;
+    if (!clienteSeleccionado) return;
     try {
-      await deleteCliente(clienteAEliminar.id);
+      await deleteCliente(clienteSeleccionado.id);
       setMostrarConfirmacion(false);
-      setClienteAEliminar(null);
-      loadClientes();
+      setClienteSeleccionado(null);
+      loadClientes(); // Recargamos la data
     } catch (err) {
       console.error("Error al eliminar:", err);
+      setError("Error al eliminar cliente.");
     }
   };
 
-  // === FORMATO FECHA ===
   const formatearFecha = (fecha) => {
     if (!fecha) return "";
     const date = new Date(fecha);
@@ -127,229 +154,124 @@ function ClienteListPage() {
     })}`;
   };
 
-  // === FILTROS ===
-  const clientesFiltrados = clientes.filter(
-    (c) =>
-      c.ci_nit?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      c.telefono?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      c.ciudad?.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  // === PAGINACIÓN LOCAL ===
-  const totalPaginas = Math.ceil(clientesFiltrados.length / clientesPorPagina);
-  const indexInicial = (paginaActual - 1) * clientesPorPagina;
-  const clientesPagina = clientesFiltrados.slice(
-    indexInicial,
-    indexInicial + clientesPorPagina
-  );
-
+  // === 4. PAGINACIÓN (Basada en Server-Side) ===
+  const totalPaginas = Math.ceil(totalClientes / CLIENTES_POR_PAGINA);
   const cambiarPagina = (num) => setPaginaActual(num);
 
-  // === EXPORTACIONES ===
-  const exportarPDF = () => {
-    if (!clientes || clientes.length === 0) {
+  // === 5. EXPORTACIONES (Modificadas para cargar TODOS) ===
+  const handleExport = async (format) => {
+    alert("Generando reporte completo, esto puede tardar...");
+    let allClientes = [];
+    try {
+      // Obtenemos TODOS los clientes (sin paginación)
+      const res = await getAllClientes();
+      allClientes = res.data.results || res.data;
+    } catch (err) {
+      alert("Error al cargar todos los clientes para exportar.");
+      return;
+    }
+
+    if (allClientes.length === 0) {
       alert("No hay clientes para exportar.");
       return;
     }
-    const doc = new jsPDF({ orientation: "landscape" });
-    doc.text("Reporte de Clientes - SmartSales365", 40, 40);
-    const datos = clientes.map((c) => [
-      c.id,
-      c.user || "",
-      c.ci_nit || "",
-      c.telefono || "",
-      c.direccion || "",
-      c.ciudad || "",
-      formatearFecha(c.fecha_registro),
-    ]);
-    autoTable(doc, {
-      head: [["ID", "Usuario", "CI/NIT", "Teléfono", "Dirección", "Ciudad", "Fecha Registro"]],
-      body: datos,
-      startY: 60,
-    });
-    doc.save("reporte_clientes.pdf");
+
+    const exportData = allClientes.map(c => ({
+      ID: c.id,
+      Usuario: c.username || c.user,
+      "CI/NIT": c.ci_nit || "",
+      Telefono: c.telefono || "",
+      Direccion: c.direccion || "",
+      Ciudad: c.ciudad || "",
+      "Fecha Registro": formatearFecha(c.fecha_registro)
+    }));
+
+    if (format === 'pdf') {
+      const doc = new jsPDF({ orientation: "landscape" });
+      doc.text("Reporte de Clientes - SmartSales365", 14, 20);
+      autoTable(doc, {
+        head: [Object.keys(exportData[0])],
+        body: exportData.map(Object.values),
+        startY: 25,
+      });
+      doc.save("reporte_clientes.pdf");
+    }
+    else if (format === 'excel') {
+      const hoja = XLSX.utils.json_to_sheet(exportData);
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, "Clientes");
+      const excel = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+      saveAs(new Blob([excel]), "reporte_clientes.xlsx");
+    }
   };
 
-  const exportarExcel = () => {
-    const hoja = XLSX.utils.json_to_sheet(clientes);
-    const libro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(libro, hoja, "Clientes");
-    const excel = XLSX.write(libro, { bookType: "xlsx", type: "array" });
-    saveAs(new Blob([excel], { type: "application/octet-stream" }), "clientes.xlsx");
-  };
-
-  const exportarHTML = () => {
-  if (!clientes || clientes.length === 0) {
-    alert("No hay clientes para exportar.");
-    return;
-  }
-
-  const html = `
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Reporte de Clientes - SmartSales365</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #0f172a;
-        color: #e2e8f0;
-        padding: 40px;
-      }
-      h1 {
-        text-align: center;
-        color: #38bdf8;
-        margin-bottom: 30px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        border-radius: 12px;
-        overflow: hidden;
-        background-color: #1e293b;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      }
-      thead {
-        background-color: #2563eb;
-        color: white;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      th, td {
-        padding: 12px 16px;
-        text-align: center;
-      }
-      tbody tr:nth-child(odd) {
-        background-color: #334155;
-      }
-      tbody tr:nth-child(even) {
-        background-color: #1e293b;
-      }
-      tbody tr:hover {
-        background-color: #475569;
-        transition: 0.2s ease-in-out;
-      }
-      th {
-        font-size: 0.9rem;
-      }
-      td {
-        font-size: 0.9rem;
-      }
-      .footer {
-        text-align: center;
-        color: #94a3b8;
-        margin-top: 25px;
-        font-size: 0.85rem;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Reporte de Clientes</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Usuario</th>
-          <th>CI/NIT</th>
-          <th>Teléfono</th>
-          <th>Dirección</th>
-          <th>Ciudad</th>
-          <th>Fecha Registro</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${clientes.map((c) => `
-          <tr>
-            <td>${c.id}</td>
-            <td>${c.username || c.user}</td>
-            <td>${c.ci_nit || "-"}</td>
-            <td>${c.telefono || "-"}</td>
-            <td>${c.direccion || "-"}</td>
-            <td>${c.ciudad || "-"}</td>
-            <td>${formatearFecha(c.fecha_registro)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-    <div class="footer">
-      Generado automáticamente por <b>SmartSales365</b> — ${new Date().toLocaleString()}
-    </div>
-  </body>
-  </html>
-  `;
-
-  const newWindow = window.open("", "_blank");
-  newWindow.document.write(html);
-  newWindow.document.close();
-};
-  // === UI ===
+  // === 6. UI (Render) ===
   return (
-    <div className="clientes-page">
-      <div className="clientes-header">
+    <div className="admin-page">
+      <div className="admin-page-header">
         <h2>Gestión de Clientes</h2>
 
-        <div className="acciones-top">
-          <input
-            type="text"
-            placeholder="Buscar por CI, teléfono o ciudad..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-          <button className="btn-primary" onClick={handleNuevo}>
-            <FaPlus /> Nuevo Cliente
-          </button>
-          <button className="btn-success" onClick={exportarExcel}>
+        {/* ¡EL BOTÓN "NUEVO CLIENTE" SE FUE! 
+          La creación se hace desde "Gestión de Usuarios".
+        */}
+
+        <div className="d-flex gap-2">
+          <button className="btn btn-success btn-sm" onClick={() => handleExport('excel')}>
             <FaFileExcel /> Excel
           </button>
-          <button className="btn-danger" onClick={exportarPDF}>
+          <button className="btn btn-danger btn-sm" onClick={() => handleExport('pdf')}>
             <FaFilePdf /> PDF
-          </button>
-          <button className="btn-secondary" onClick={exportarHTML}>
-            <FaPrint /> HTML
           </button>
         </div>
       </div>
 
+      {/* Barra de búsqueda (Ahora funciona con el backend) */}
+      <input
+        type="text"
+        placeholder="Buscar por Username, Email, CI, Teléfono o Ciudad..."
+        className="form-control mb-3"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
+
+      {error && !mostrarModal && <p className="text-danger">{error}</p>}
+
       {/* === TABLA === */}
-      <div className="tabla-card">
-        <table className="table-dark">
-          <thead>
+      <div className="table-responsive">
+        <table className="table table-striped table-hover table-bordered">
+          <thead className="table-dark">
             <tr>
-              <th>N°</th>
               <th>ID</th>
-              <th>Usuario</th>
+              <th>Username</th>
+              <th>Nombre Completo</th>
               <th>CI/NIT</th>
               <th>Teléfono</th>
-              <th>Dirección</th>
               <th>Ciudad</th>
               <th>Fecha Registro</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {clientesPagina.length > 0 ? (
-              clientesPagina.map((c, index) => (
+            {loading ? (
+              <tr><td colSpan="8" className="text-center">Cargando...</td></tr>
+            ) : clientes.length > 0 ? (
+              clientes.map((c) => (
                 <tr key={c.id}>
-                   {/* 🔹 Numeración visual (1,2,3,...) según página actual */}
-                  <td>{index + 1 + (paginaActual - 1) * clientesPorPagina}</td>
                   <td>{c.id}</td>
-                  <td>{c.username || c.user}</td>
+                  <td>{c.username}</td>
+                  <td>{c.nombre_completo}</td>
                   <td>{c.ci_nit}</td>
                   <td>{c.telefono}</td>
-                  <td>{c.direccion}</td>
                   <td>{c.ciudad}</td>
                   <td>{formatearFecha(c.fecha_registro)}</td>
-                  <td className="acciones">
-                    <button className="btn-accion btn-ver" onClick={() => setMostrarDetalles(c)}>
+                  <td className="d-flex gap-2">
+                    <button className="btn btn-sm btn-outline-info" title="Ver Detalles" onClick={() => setMostrarDetalles(c)}>
                       <FaEye />
                     </button>
-                    <button className="btn-accion btn-editar" onClick={() => handleEditar(c)}>
+                    <button className="btn btn-sm btn-outline-primary" title="Editar Perfil (Rellenar Datos)" onClick={() => handleEditar(c)}>
                       <FaEdit />
                     </button>
-                    <button className="btn-accion btn-eliminar" onClick={() => handleEliminar(c)}>
+                    <button className="btn btn-sm btn-outline-danger" title="Eliminar Cliente" onClick={() => handleEliminar(c)}>
                       <FaTrash />
                     </button>
                   </td>
@@ -357,82 +279,71 @@ function ClienteListPage() {
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="sin-datos">
-                  No hay clientes registrados
+                <td colSpan="8" className="text-center">
+                  No se encontraron clientes.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
 
-        {/* === PAGINACIÓN === */}
+        {/* === PAGINACIÓN (Basada en Server-Side) === */}
         {totalPaginas > 1 && (
-          <div className="paginacion">
-            {Array.from({ length: totalPaginas }).map((_, i) => (
+          <div className="paginacion d-flex justify-content-center gap-2 mt-3">
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
               <button
-                key={i}
-                className={`pagina-btn ${paginaActual === i + 1 ? "activa" : ""}`}
-                onClick={() => cambiarPagina(i + 1)}
+                key={num}
+                className={`btn btn-sm ${paginaActual === num ? "btn-primary" : "btn-outline-primary"}`}
+                onClick={() => cambiarPagina(num)}
               >
-                {i + 1}
+                {num}
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* === MODAL FORMULARIO (CREAR/EDITAR) === */}
+      {/* === MODAL FORMULARIO (SOLO EDITAR) === */}
       {mostrarModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>{editing ? "Editar Cliente" : "Nuevo Cliente"}</h3>
+        <div className="logout-modal-overlay">
+          <div className="logout-modal" style={{ width: '500px' }}>
+            <h3>Editar Perfil de Cliente</h3>
+            {error && <p className="text-danger small">{error}</p>}
             <form onSubmit={handleGuardar}>
-              <input
-                type="text"
-                name="user"
-                placeholder="Usuario (ID o nombre)"
-                value={formData.user}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="text"
-                name="ci_nit"
-                placeholder="CI o NIT"
-                value={formData.ci_nit}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="telefono"
-                placeholder="Teléfono"
-                value={formData.telefono}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="direccion"
-                placeholder="Dirección"
-                value={formData.direccion}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="ciudad"
-                placeholder="Ciudad"
-                value={formData.ciudad}
-                onChange={handleChange}
-              />
-              <div className="modal-actions">
-                <button
-                  className="btn-cancelar"
-                  type="button"
-                  onClick={() => setMostrarModal(false)}
-                >
+              {/* Mostramos datos del User (solo lectura) */}
+              <div className="mb-2 text-start">
+                <label className="form-label">Username</label>
+                <input type="text" className="form-control" value={formData.username} readOnly disabled />
+              </div>
+              <div className="mb-2 text-start">
+                <label className="form-label">Nombre Completo</label>
+                <input type="text" className="form-control" value={formData.nombre_completo} readOnly disabled />
+              </div>
+
+              {/* Campos editables (del modelo Cliente) */}
+              <div className="mb-2 text-start">
+                <label htmlFor="ci_nit" className="form-label">CI o NIT</label>
+                <input type="text" className="form-control" id="ci_nit" name="ci_nit" value={formData.ci_nit} onChange={handleChange} />
+              </div>
+              <div className="mb-2 text-start">
+                <label htmlFor="telefono" className="form-label">Teléfono</label>
+                <input type="text" className="form-control" id="telefono" name="telefono" value={formData.telefono} onChange={handleChange} />
+              </div>
+              <div className="mb-2 text-start">
+                <label htmlFor="direccion" className="form-label">Dirección</label>
+                <input type="text" className="form-control" id="direccion" name="direccion" value={formData.direccion} onChange={handleChange} />
+              </div>
+              <div className="mb-2 text-start">
+                <label htmlFor="ciudad" className="form-label">Ciudad</label>
+                <input type="text" className="form-control" id="ciudad" name="ciudad" value={formData.ciudad} onChange={handleChange} />
+              </div>
+
+              <div className="logout-actions mt-4">
+                <button type="button" onClick={() => setMostrarModal(false)} className="btn-cancel">
                   Cancelar
                 </button>
-                <button type="submit" className="btn-primary">
-                  {editing ? "Guardar Cambios" : "Guardar"}
+                <button type="submit" className="btn-accept">
+                  Guardar Cambios
                 </button>
               </div>
             </form>
@@ -440,20 +351,21 @@ function ClienteListPage() {
         </div>
       )}
 
-      {/* === MODAL DETALLES === */}
+      {/* === MODAL DETALLES (Tu código, está perfecto) === */}
       {mostrarDetalles && (
-        <div className="modal">
-          <div className="modal-content detalles">
+        <div className="logout-modal-overlay">
+          <div className="logout-modal detalles" style={{ textAlign: 'left', color: '#fff' }}>
             <h3>Detalles del Cliente</h3>
             <p><b>ID:</b> {mostrarDetalles.id}</p>
-            <p><b>Usuario:</b> {mostrarDetalles.username}</p>
+            <p><b>Username:</b> {mostrarDetalles.username}</p>
+            <p><b>Nombre:</b> {mostrarDetalles.nombre_completo}</p>
             <p><b>CI/NIT:</b> {mostrarDetalles.ci_nit}</p>
             <p><b>Teléfono:</b> {mostrarDetalles.telefono}</p>
             <p><b>Dirección:</b> {mostrarDetalles.direccion}</p>
             <p><b>Ciudad:</b> {mostrarDetalles.ciudad}</p>
             <p><b>Fecha Registro:</b> {formatearFecha(mostrarDetalles.fecha_registro)}</p>
-            <div className="modal-actions">
-              <button className="btn-cancelar" onClick={() => setMostrarDetalles(null)}>
+            <div className="logout-actions" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn-cancel" onClick={() => setMostrarDetalles(null)}>
                 Cerrar
               </button>
             </div>
@@ -461,22 +373,19 @@ function ClienteListPage() {
         </div>
       )}
 
-      {/* === MODAL CONFIRMACIÓN === */}
+      {/* === MODAL CONFIRMACIÓN (Tu código, está perfecto) === */}
       {mostrarConfirmacion && (
-        <div className="modal">
-          <div className="modal-content eliminar-modal">
+        <div className="logout-modal-overlay">
+          <div className="logout-modal eliminar-modal">
             <h3>¿Seguro que deseas eliminar este cliente?</h3>
             <p style={{ marginTop: "10px", color: "#94a3b8" }}>
-              {clienteAEliminar?.user} — {clienteAEliminar?.ci_nit}
+              {clienteSeleccionado?.username} — {clienteSeleccionado?.ci_nit}
             </p>
-            <div className="modal-actions">
-              <button
-                className="btn-cancelar"
-                onClick={() => setMostrarConfirmacion(false)}
-              >
+            <div className="logout-actions">
+              <button className="btn-cancel" onClick={() => setMostrarConfirmacion(false)}>
                 Cancelar
               </button>
-              <button className="btn-aceptar" onClick={confirmarEliminar}>
+              <button className="btn-accept" onClick={confirmarEliminar} style={{ backgroundColor: '#e74c3c' }}>
                 Aceptar
               </button>
             </div>

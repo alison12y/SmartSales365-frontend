@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { logout } from '../../api/auth'; 
-import logo from '/logo1..png'; 
-import "../../styles/AdminLayout.css"; 
+import { logout } from '../../api/auth';
+import logo from '/logo1..png';
+import "../../styles/AdminLayout.css";
 import {
   FaTachometerAlt, FaBox, FaUsers, FaChartLine, FaRobot, FaFileAlt,
   FaCogs, FaLock, FaEnvelope, FaChevronDown, FaChevronUp, FaPowerOff,
   FaUserEdit, FaUserCog, FaBook, FaClipboardList, FaBell, FaDatabase, FaChartBar,
-  FaBars
+  FaBars, FaStore
 } from "react-icons/fa";
 
 export default function AdminLayout() {
@@ -25,7 +25,7 @@ export default function AdminLayout() {
   };
 
   const confirmLogout = () => {
-    logout(); 
+    logout();
     navigate("/login");
   };
 
@@ -39,7 +39,7 @@ export default function AdminLayout() {
     <>
       <div className="dashboard-dark-wrapper">
         {/* Sidebar */}
-        <aside className={`sidebar-dark ${sidebarOpen ? "open" : ""}`}> 
+        <aside className={`sidebar-dark ${sidebarOpen ? "open" : ""}`}>
           <div className="sidebar-header">
             <img src={logo} alt="SmartSales365" className="sidebar-logo" />
             <h3 className="sidebar-title">SmartSales365</h3>
@@ -53,6 +53,32 @@ export default function AdminLayout() {
                 </NavLink>
               </li>
 
+              {/* Usuarios */}
+              <li onClick={() => handleMenuToggle("usuarios")}>
+                <span>
+                  <FaUsers /> Usuarios y Roles
+                  {openMenu === "usuarios" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
+              </li>
+              {openMenu === "usuarios" && (
+                <ul className="submenu">
+                  <li><NavLink to="/dashboard/users"><FaUserEdit size={12} /> Gestionar Usuarios</NavLink></li>
+                  <li><NavLink to="/dashboard/roles"><FaUserCog size={12} /> Roles y Permisos</NavLink></li>
+                </ul>
+              )}
+              {/* Seguridad */}
+              <li onClick={() => handleMenuToggle("seguridad")}>
+                <span>
+                  <FaLock /> Seguridad
+                  {openMenu === "seguridad" ? <FaChevronUp /> : <FaChevronDown />}
+                </span>
+              </li>
+              {openMenu === "seguridad" && (
+                <ul className="submenu">
+                  <li><NavLink to="/dashboard/security/audit"><FaBook size={12} /> Bitácora</NavLink></li>
+                </ul>
+              )}
+
               {/* Gestión Comercial */}
               <li onClick={() => handleMenuToggle("comercial")}>
                 <span>
@@ -63,6 +89,11 @@ export default function AdminLayout() {
               {openMenu === "comercial" && (
                 <ul className="submenu">
                   <li><NavLink to="/dashboard/products"><FaClipboardList size={12} /> Productos</NavLink></li>
+                  <li>
+                    <a href="/dashboard/shop" target="_blank" rel="noopener noreferrer">
+                      <FaStore size={12} /> Ver Tienda (Catálogo)
+                    </a>
+                  </li>
                   <li><NavLink to="/dashboard/customers"><FaUsers size={12} /> Clientes</NavLink></li>
                   <li><NavLink to="/dashboard/sales"><FaChartLine size={12} /> Ventas</NavLink></li>
                 </ul>
@@ -96,33 +127,9 @@ export default function AdminLayout() {
                 </ul>
               )}
 
-              {/* Usuarios */}
-              <li onClick={() => handleMenuToggle("usuarios")}>
-                <span>
-                  <FaUsers /> Usuarios y Roles
-                  {openMenu === "usuarios" ? <FaChevronUp /> : <FaChevronDown />}
-                </span>
-              </li>
-              {openMenu === "usuarios" && (
-                <ul className="submenu">
-                  <li><NavLink to="/dashboard/users"><FaUserEdit size={12} /> Gestionar Usuarios</NavLink></li>
-                  <li><NavLink to="/dashboard/roles"><FaUserCog size={12} /> Roles y Permisos</NavLink></li>
-                  <li><NavLink to="/dashboard/security/audit"><FaBook size={12} /> Gestionar Bitácora</NavLink></li>
-                </ul>
-              )}
 
-              {/* Seguridad */}
-              <li onClick={() => handleMenuToggle("seguridad")}>
-                <span>
-                  <FaLock /> Seguridad
-                  {openMenu === "seguridad" ? <FaChevronUp /> : <FaChevronDown />}
-                </span>
-              </li>
-              {openMenu === "seguridad" && (
-                <ul className="submenu">
-                  <li><NavLink to="/dashboard/security/audit"><FaBook size={12} /> Bitácora</NavLink></li>
-                </ul>
-              )}
+
+
 
               {/* Comunicación */}
               <li onClick={() => handleMenuToggle("comunicacion")}>

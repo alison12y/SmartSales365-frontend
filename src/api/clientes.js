@@ -1,38 +1,35 @@
-// src/api/clientes.js
-import axios from "axios";
+import { adminApi } from './adminService'; // Importamos la instancia 'mágica' de Axios
 
-//  Usa la variable de entorno configurada en Vercel o local (.env)
-const API_URL = `${import.meta.env.VITE_API_URL}/customers/`;
-
-// === LEE EL TOKEN JWT DEL LOCALSTORAGE ===
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("access") || localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+/**
+ * Obtiene la lista de clientes (paginada y con búsqueda).
+ * El backend (Django) hace el filtrado y la paginación.
+ * @param {object} params - Opciones como { page: 1, search: 'juan' }
+ */
+export const getClientes = (params) => {
+  // Esta es la URL que creamos en apps/customers/urls.py
+  return adminApi.get('/customers/clientes/', { params }); 
 };
 
-// === CRUD DE CLIENTES ===
+/**
+ * Obtiene TODOS los clientes (para los reportes).
+ */
+export const getAllClientes = () => {
+  return adminApi.get('/customers/clientes/', { params: { page_size: 1000 } }); 
+};
 
-// Listar clientes
-export const getClientes = (params = {}) =>
-  axios.get(API_URL, {
-    params,
-    headers: getAuthHeaders(),
-  });
+/**
+ * Actualiza un perfil de cliente (para "rellenar los datos").
+ * @param {number} id - ID del cliente
+ * @param {object} data - Datos del formulario (ci_nit, telefono, etc.)
+ */
+export const updateCliente = (id, data) => {
+  return adminApi.put(`/customers/clientes/${id}/`, data);
+};
 
-// Crear cliente
-export const createCliente = (data) =>
-  axios.post(API_URL, data, {
-    headers: getAuthHeaders(),
-  });
-
-// Actualizar cliente
-export const updateCliente = (id, data) =>
-  axios.put(`${API_URL}${id}/`, data, {
-    headers: getAuthHeaders(),
-  });
-
-// Eliminar cliente
-export const deleteCliente = (id) =>
-  axios.delete(`${API_URL}${id}/`, {
-    headers: getAuthHeaders(),
-  });
+/**
+ * Elimina un perfil de cliente.
+ * @param {number} id - ID del cliente
+ */
+export const deleteCliente = (id) => {
+  return adminApi.delete(`/customers/clientes/${id}/`);
+};

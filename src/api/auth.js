@@ -3,14 +3,14 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 // Creamos una instancia de Axios para reutilizar
-const apiClient = axios.create({
+const publicApi = axios.create({
     baseURL: API_BASE_URL,
 });
 
-// --- Función de LOGIN (la que ya tenías, ¡está perfecta!) ---
+// --- Función de LOGIN (Tu código original, está perfecto) ---
 export async function loginAdmin(username, password) {
   try {
-    const response = await apiClient.post(`/auth/token/`, {
+    const response = await publicApi.post(`/auth/token/`, {
       username,
       password,
     });
@@ -28,12 +28,10 @@ export async function loginAdmin(username, password) {
   }
 }
 
-// --- ¡NUEVA FUNCIÓN AÑADIDA! ---
-// Función de REGISTRO (se conecta a tu UserRegistrationSerializer)
+// --- Función de REGISTRO (Tu código original, está perfecto) ---
 export async function registerUser(userData) {
   try {
-    // userData incluye { username, email, password, password2, ci_nit, ... }
-    const response = await apiClient.post(`/auth/register/`, userData);
+    const response = await publicApi.post(`/auth/register/`, userData);
     
     return {
         success: true,
@@ -46,9 +44,13 @@ export async function registerUser(userData) {
   }
 }
 
-// --- ¡NUEVA FUNCIÓN AÑADIDA! ---
-// Función de LOGOUT
+// --- Función de LOGOUT (¡MEJORADA!) ---
 export function logout() {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    
+    // MEJORA: Redirige al login.
+    // Usamos window.location porque esta función se llama desde
+    // fuera de un componente React (desde adminService.js).
+    window.location.href = '/login'; 
 }
